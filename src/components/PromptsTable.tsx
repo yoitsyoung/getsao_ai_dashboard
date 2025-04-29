@@ -1,36 +1,130 @@
 import React, { useState } from 'react';
 import { RotateCw, Upload } from 'lucide-react';
 import { Modal } from './ui/Modal';
+import { useNavigate } from 'react-router-dom';
 
 interface Prompt {
   id: number;
   text: string;
+  type: 'direct' | 'ranking';
+  ranking?: number;
+  numberOfRuns: number;
+  lastRunDateTime: string;
 }
 
 const mockPrompts: Prompt[] = [
-  { id: 1, text: 'best TechBehemoths product for productivity' },
-  { id: 2, text: 'TechBehemoths reviews for high performance' },
-  { id: 3, text: 'stylish TechBehemoths gadgets with nice design' },
-  { id: 4, text: 'TechBehemoths laptops for gaming' },
-  { id: 5, text: 'affordable TechBehemoths devices for students' },
-  { id: 6, text: 'TechBehemoths products with great battery life' },
-  { id: 7, text: 'TechBehemoths accessories for home office setup' },
-  { id: 8, text: 'TechBehemoths family pack electronics sale' },
-  { id: 9, text: 'lightweight TechBehemoths tablet for travel' },
-  { id: 10, text: 'TechBehemoths products with no bloatware' }
+  { 
+    id: 1, 
+    text: 'best TechBehemoths product for productivity', 
+    type: 'direct',
+    ranking: 1,
+    numberOfRuns: 15,
+    lastRunDateTime: '2024-04-28 14:30:00'
+  },
+  { 
+    id: 2, 
+    text: 'TechBehemoths reviews for high performance', 
+    type: 'direct',
+    ranking: 2,
+    numberOfRuns: 12,
+    lastRunDateTime: '2024-04-28 13:45:00'
+  },
+  { 
+    id: 3, 
+    text: 'stylish TechBehemoths gadgets with nice design', 
+    type: 'direct',
+    ranking: 3,
+    numberOfRuns: 8,
+    lastRunDateTime: '2024-04-27 16:20:00'
+  },
+  { 
+    id: 4, 
+    text: 'TechBehemoths laptops for gaming', 
+    type: 'direct',
+    ranking: 4,
+    numberOfRuns: 20,
+    lastRunDateTime: '2024-04-28 15:10:00'
+  },
+  { 
+    id: 5, 
+    text: 'affordable TechBehemoths devices for students', 
+    type: 'direct',
+    ranking: 5,
+    numberOfRuns: 10,
+    lastRunDateTime: '2024-04-27 11:30:00'
+  },
+  { 
+    id: 6, 
+    text: 'TechBehemoths products with great battery life', 
+    type: 'ranking',
+    numberOfRuns: 18,
+    lastRunDateTime: '2024-04-28 10:15:00'
+  },
+  { 
+    id: 7, 
+    text: 'TechBehemoths accessories for home office setup', 
+    type: 'ranking',
+    numberOfRuns: 14,
+    lastRunDateTime: '2024-04-28 09:30:00'
+  },
+  { 
+    id: 8, 
+    text: 'TechBehemoths family pack electronics sale', 
+    type: 'ranking',
+    numberOfRuns: 7,
+    lastRunDateTime: '2024-04-27 14:45:00'
+  },
+  { 
+    id: 9, 
+    text: 'lightweight TechBehemoths tablet for travel', 
+    type: 'ranking',
+    numberOfRuns: 22,
+    lastRunDateTime: '2024-04-28 16:20:00'
+  },
+  { 
+    id: 10, 
+    text: 'TechBehemoths products with no bloatware', 
+    type: 'ranking',
+    numberOfRuns: 16,
+    lastRunDateTime: '2024-04-28 11:40:00'
+  }
 ];
 
 const PromptsTable: React.FC = () => {
+  const navigate = useNavigate();
   const [prompts, setPrompts] = useState<Prompt[]>(mockPrompts);
+  const [selectedPrompts, setSelectedPrompts] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [batchPrompts, setBatchPrompts] = useState('');
+  const [activeTab, setActiveTab] = useState<'direct' | 'ranking'>('direct');
   const promptsPerPage = 10;
 
-  const totalPages = Math.ceil(prompts.length / promptsPerPage);
+  const filteredPrompts = prompts.filter(prompt => prompt.type === activeTab);
+  const totalPages = Math.ceil(filteredPrompts.length / promptsPerPage);
   const startIndex = (currentPage - 1) * promptsPerPage;
   const endIndex = startIndex + promptsPerPage;
-  const currentPrompts = prompts.slice(startIndex, endIndex);
+  const currentPrompts = filteredPrompts.slice(startIndex, endIndex);
+
+  const handlePromptClick = (prompt: Prompt) => {
+    navigate(`/prompts/${prompt.id}`);
+  };
+
+  const handleCheckboxChange = (promptId: number) => {
+    setSelectedPrompts(prev => {
+      if (prev.includes(promptId)) {
+        return prev.filter(id => id !== promptId);
+      } else {
+        return [...prev, promptId];
+      }
+    });
+  };
+
+  const handleGenerateReport = () => {
+    const selectedPromptData = prompts.filter(prompt => selectedPrompts.includes(prompt.id));
+    console.log('Selected prompts for report:', selectedPromptData);
+    // Here you would implement the actual report generation logic
+  };
 
   const handleBatchUpload = () => {
     const newPrompts = batchPrompts
@@ -38,7 +132,11 @@ const PromptsTable: React.FC = () => {
       .filter(text => text.trim())
       .map((text, index) => ({
         id: prompts.length + index + 1,
-        text: text.trim()
+        text: text.trim(),
+        type: activeTab,
+        ranking: activeTab === 'direct' ? prompts.length + index + 1 : undefined,
+        numberOfRuns: 0,
+        lastRunDateTime: new Date().toISOString().slice(0, 19).replace('T', ' ')
       }));
 
     setPrompts(prev => [...prev, ...newPrompts]);
@@ -74,12 +172,52 @@ const PromptsTable: React.FC = () => {
                 <Upload size={16} />
                 Batch Upload
               </button>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+              <button 
+                onClick={handleGenerateReport}
+                disabled={selectedPrompts.length === 0}
+                className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
+                  selectedPrompts.length === 0
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
+              >
                 <RotateCw size={16} />
-                Generate Report
+                Generate Report ({selectedPrompts.length})
               </button>
             </div>
           </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="border-b border-gray-200">
+          <nav className="flex -mb-px">
+            <button
+              onClick={() => {
+                setActiveTab('direct');
+                setCurrentPage(1);
+              }}
+              className={`py-4 px-6 text-sm font-medium ${
+                activeTab === 'direct'
+                  ? 'border-b-2 border-blue-500 text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Direct Prompts
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('ranking');
+                setCurrentPage(1);
+              }}
+              className={`py-4 px-6 text-sm font-medium ${
+                activeTab === 'ranking'
+                  ? 'border-b-2 border-blue-500 text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Ranking Prompts
+            </button>
+          </nav>
         </div>
 
         <div className="overflow-x-auto">
@@ -89,19 +227,53 @@ const PromptsTable: React.FC = () => {
                 <th className="text-left text-sm font-medium text-gray-500 p-4 border-b border-gray-200">
                   Prompt
                 </th>
-                <th className="text-right text-sm font-medium text-gray-500 p-4 border-b border-gray-200 w-24">
-                  操作
+                {activeTab === 'direct' && (
+                  <th className="text-center text-sm font-medium text-gray-500 p-4 border-b border-gray-200 w-24">
+                    Ranking
+                  </th>
+                )}
+                <th className="text-center text-sm font-medium text-gray-500 p-4 border-b border-gray-200 w-24">
+                  Number of Runs
+                </th>
+                <th className="text-center text-sm font-medium text-gray-500 p-4 border-b border-gray-200 w-40">
+                  Last Run
+                </th>
+                <th className="text-center text-sm font-medium text-gray-500 p-4 border-b border-gray-200 w-12">
+                  Select
                 </th>
               </tr>
             </thead>
             <tbody>
               {currentPrompts.map((prompt) => (
-                <tr key={prompt.id} className="border-b border-gray-100 last:border-0">
-                  <td className="p-4 text-sm text-gray-900">{prompt.text}</td>
-                  <td className="p-4 text-right">
-                    <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                      详情
-                    </button>
+                <tr 
+                  key={prompt.id} 
+                  className="border-b border-gray-100 last:border-0 hover:bg-gray-50"
+                >
+                  <td 
+                    className="p-4 text-sm text-gray-900 cursor-pointer"
+                    onClick={() => handlePromptClick(prompt)}
+                  >
+                    <span className="text-blue-600 hover:text-blue-800">{prompt.text}</span>
+                  </td>
+                  {activeTab === 'direct' && (
+                    <td className="p-4 text-center text-sm text-gray-900">
+                      {prompt.ranking}
+                    </td>
+                  )}
+                  <td className="p-4 text-center text-sm text-gray-900">
+                    {prompt.numberOfRuns}
+                  </td>
+                  <td className="p-4 text-center text-sm text-gray-900">
+                    {prompt.lastRunDateTime}
+                  </td>
+                  <td className="p-4 text-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedPrompts.includes(prompt.id)}
+                      onChange={() => handleCheckboxChange(prompt.id)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
+                      onClick={(e) => e.stopPropagation()}
+                    />
                   </td>
                 </tr>
               ))}
@@ -112,7 +284,7 @@ const PromptsTable: React.FC = () => {
         <div className="p-4 border-t border-gray-200 bg-white">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-500">
-              第 {startIndex + 1}-{Math.min(endIndex, prompts.length)} 条/总共 {prompts.length} 条
+              第 {startIndex + 1}-{Math.min(endIndex, filteredPrompts.length)} 条/总共 {filteredPrompts.length} 条
             </div>
             <div className="flex items-center space-x-2">
               <button
@@ -151,11 +323,11 @@ const PromptsTable: React.FC = () => {
           setIsModalOpen(false);
           setBatchPrompts('');
         }}
-        title="Batch Upload Prompts"
+        title={`Batch Upload ${activeTab === 'direct' ? 'Direct' : 'Ranking'} Prompts`}
       >
         <div>
           <p className="text-sm text-gray-600 mb-4">
-            Enter one prompt per line. Each line will be added as a separate prompt.
+            Enter one prompt per line. Each line will be added as a separate {activeTab} prompt.
           </p>
           <textarea
             value={batchPrompts}
