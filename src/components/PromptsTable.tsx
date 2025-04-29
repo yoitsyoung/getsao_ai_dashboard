@@ -51,9 +51,20 @@ const PromptsTable: React.FC = () => {
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-6 border-b border-gray-200">
           <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">TechBehemoths</h1>
-              <p className="text-sm text-gray-500 mt-1">Prompt Management</p>
+            <div className="flex items-center gap-3">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">TechBehemoths</h1>
+                <p className="text-sm text-gray-500 mt-1">Prompt Management</p>
+              </div>
+              <input
+                type="text"
+                placeholder="Project Name"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                <RotateCw size={16} />
+                Refresh
+              </button>
             </div>
             <div className="flex gap-3">
               <button

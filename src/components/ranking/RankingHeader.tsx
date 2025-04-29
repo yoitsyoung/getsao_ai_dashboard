@@ -2,10 +2,13 @@ import React from 'react';
 import { useAnalytics } from '../../context/AnalyticsContext';
 import { formatDate } from '../../utils/formatters';
 import { RefreshCw, Download } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 const RankingHeader: React.FC = () => {
   const { data, refreshData } = useAnalytics();
   const { metadata } = data;
+  const location = useLocation();
+  const selectedPrompt = location.state?.prompt || 'No prompt selected';
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
@@ -13,6 +16,9 @@ const RankingHeader: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Ranking Prompt Analytics</h1>
           <p className="text-lg text-gray-600 mt-1">Prompt Performance Analysis</p>
+          <div className="mt-2 p-4 bg-gray-50 rounded-lg">
+            <p className="text-sm text-gray-700">Selected Prompt: <span className="font-medium">{selectedPrompt}</span></p>
+          </div>
         </div>
         
         <div className="flex flex-col sm:flex-row items-start sm:items-center mt-4 md:mt-0 gap-4">
