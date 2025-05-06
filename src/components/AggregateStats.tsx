@@ -7,7 +7,7 @@ const AggregateStats: React.FC = () => {
   const { aggregateStats } = data;
 
   const statColors = {
-    ranking: {
+    positive: {
       bg: 'bg-blue-50',
       text: 'text-blue-600',
       border: 'border-blue-200',
@@ -19,13 +19,13 @@ const AggregateStats: React.FC = () => {
       border: 'border-emerald-200',
       accent: 'bg-emerald-600'
     },
-    referenced: {
+    relevant: {
       bg: 'bg-purple-50',
       text: 'text-purple-600',
       border: 'border-purple-200',
       accent: 'bg-purple-600'
     },
-    unrelated: {
+    useful: {
       bg: 'bg-gray-50',
       text: 'text-gray-600',
       border: 'border-gray-200',
@@ -39,9 +39,9 @@ const AggregateStats: React.FC = () => {
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard 
-          title="Ranking" 
-          value={`${aggregateStats.ranking}%`} 
-          colors={statColors.ranking}
+          title="Positive" 
+          value={`${aggregateStats.positive}%`} 
+          colors={statColors.positive}
         />
         
         <StatCard 
@@ -51,15 +51,15 @@ const AggregateStats: React.FC = () => {
         />
         
         <StatCard 
-          title="Referenced" 
-          value={`${aggregateStats.referenced}%`} 
-          colors={statColors.referenced}
+          title="Relevant" 
+          value={`${aggregateStats.relevant}%`} 
+          colors={statColors.relevant}
         />
         
         <StatCard 
-          title="Unrelated" 
-          value={`${aggregateStats.unrelated}%`} 
-          colors={statColors.unrelated}
+          title="Useful" 
+          value={`${aggregateStats.useful}%`} 
+          colors={statColors.useful}
         />
       </div>
     </div>

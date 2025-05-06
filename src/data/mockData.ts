@@ -64,10 +64,10 @@ export const mockAnalyticsData: AnalyticsData = {
     lastRun: '2023-10-04T09:00:00Z'
   },
   aggregateStats: {
-    ranking: 40,
+    positive: 40,
     official: 20,
-    referenced: 30,
-    unrelated: 10
+    relevant: 30,
+    useful: 10
   },
   historicalData: generateHistoricalData(),
   sourceCitations: exampleUrls.map((url, index) => ({
